@@ -1,9 +1,9 @@
 import json
 from flask import Flask, request, jsonify
 
-def create_app():
+def create_app(debug=True):
     app = Flask(__name__)
-    app.debug = True
+    app.debug = debug
     return app
 
 app = create_app()
