@@ -1,12 +1,13 @@
 import datetime
 import json
-from flask import Flask, request, jsonify, Blueprint
+from flask import Flask, request, jsonify, Blueprint, url_for, redirect
 
 bp = Blueprint('club', __name__)
 
-def create_app(debug=True):
+def create_app(debug=True, testing=False):
     app = Flask(__name__)
     app.debug = debug
+    app.testing = testing
     app.register_blueprint(bp)
     return app
 
@@ -63,15 +64,24 @@ def club():
     '''
     club_json = read_club_json()
     if request.method == 'POST':
-        club_json.append({
-            'username': request.form['user_name'],
-            'nickname': request.form.get('nickname', ''),
-            'time_added': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
-            'channel': request.form.get('channel_name', ''),
-            'channel_id': request.form.get('channel_id', '')
-        })
-        write_club_json(club_json)
-    return jsonify({'club': club_json})
+        if request.form.get('text') == 'clear':
+            call_the_cops()
+            return 'Cleared the club!'
+
+        else:
+            if request.form['user_name'] in [i.get('username') for i in club_json]:
+                return 'You\'re already in the club!'
+            club_json.append({
+                'username': request.form['user_name'],
+                'nickname': request.form.get('nickname', ''),
+                'time_added': datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
+                'channel': request.form.get('channel_name', ''),
+                'channel_id': request.form.get('channel_id', '')
+            })
+            write_club_json(club_json)
+        return 'Welcome to lunch club!', 200
+
+    return redirect(url_for('club'))
 
 @bp.route('/cops', methods=['POST'])
 def cops():
